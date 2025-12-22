@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Payment Confirmation</title>
+    <style>
+      body {
+        font-family: -apple-system, system-ui, Segoe UI, Roboto, Helvetica,
+          Arial, sans-serif;
+        margin: 2rem;
+      }
+      .card {
+        max-width: 640px;
+        margin: 0 auto;
+        padding: 1.5rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+      }
+      .success {
+        color: #065f46;
+        background: #ecfdf5;
+        border: 1px solid #a7f3d0;
+        padding: 0.75rem;
+        border-radius: 8px;
+      }
+      .failed {
+        color: #7f1d1d;
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        padding: 0.75rem;
+        border-radius: 8px;
+      }
+      .error {
+        color: #7c2d12;
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+        padding: 0.75rem;
+        border-radius: 8px;
+      }
+      .meta {
+        margin-top: 1rem;
+        color: #374151;
+      }
+      .meta strong {
+        color: #111827;
+      }
+      .tx {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+          "Liberation Mono", "Courier New", monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>Payment Confirmation</h1>
+
+      {% if status == 'success' %}
+      <div class="success"><strong>Success:</strong> {{ message }}</div>
+      {% elif status == 'failed' %}
+      <div class="failed"><strong>Failed:</strong> {{ message }}</div>
+      {% else %}
+      <div class="error"><strong>Notice:</strong> {{ message }}</div>
+      {% endif %}
+
+      <div class="meta">
+        {% if tx_ref %}
+        <p>Reference: <span class="tx">{{ tx_ref }}</span></p>
+        {% endif %} {% if booking %}
+        <p>Booking ID: <strong>{{ booking.id }}</strong></p>
+        {% endif %} {% if amount %}
+        <p>Amount: <strong>{{ amount }}</strong> {{ currency }}</p>
+        {% endif %}
+      </div>
+
+      <p style="margin-top: 1rem">
+        You may close this page or return to the app.
+      </p>
+    </div>
+  </body>
+</html>
