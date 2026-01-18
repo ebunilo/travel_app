@@ -104,7 +104,7 @@ CORS_ALLOWED_HEADERS = env.list("CORS_ALLOWED_HEADERS", default=[])
 DATABASES = {
     'default': dj_database_url.config(
         # Replace this value with your local database's connection string.
-        default='postgresql://postgres:postgres@localhost:5432/alx_travel_app',
+        default='postgresql://travel_app_user:oucSbHZAUq1JRsew0mAzVDmysHZKXaaQ@dpg-d5mjre4hg0os73daji4g-a/travel_app_db_0md0',
         conn_max_age=600
     )
 }
