@@ -8,11 +8,12 @@ from django.views.generic import TemplateView
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from django.contrib.auth.models import User
 import requests
 import uuid
 
 from .models import Listing, Booking, Payment
-from .serializers import ListingSerializer, BookingSerializer
+from .serializers import ListingSerializer, BookingSerializer, UserSerializer, UserCreateUpdateSerializer
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
@@ -23,6 +24,98 @@ except Exception:
     send_payment_confirmation_email = None
 
 # Create your views here.
+
+class UserViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for User management.
+    
+    List all users, create new users, retrieve specific user details,
+    update user information, and delete users.
+    """
+    queryset = User.objects.all()
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_serializer_class(self):
+        if self.action in ['create', 'update', 'partial_update']:
+            return UserCreateUpdateSerializer
+        return UserSerializer
+
+    @swagger_auto_schema(
+        operation_description="List all users",
+        responses={200: UserSerializer(many=True)}
+    )
+    def list(self, request, *args, **kwargs):
+        """
+        Retrieve a list of all users.
+        """
+        return super().list(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_description="Create a new user",
+        request_body=UserCreateUpdateSerializer,
+        responses={201: UserSerializer}
+    )
+    def create(self, request, *args, **kwargs):
+        """
+        Create a new user account.
+        
+        Required fields:
+        - username: unique username
+        - email: user email address
+        - password: minimum 8 characters
+        
+        Optional fields:
+        - first_name
+        - last_name
+        - is_active: default True
+        """
+        return super().create(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_description="Retrieve a specific user by ID",
+        responses={200: UserSerializer}
+    )
+    def retrieve(self, request, *args, **kwargs):
+        """
+        Retrieve details of a specific user.
+        """
+        return super().retrieve(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_description="Update a user",
+        request_body=UserCreateUpdateSerializer,
+        responses={200: UserSerializer}
+    )
+    def update(self, request, *args, **kwargs):
+        """
+        Update user information.
+        
+        All fields are optional.
+        Password will be hashed if provided.
+        """
+        return super().update(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_description="Partially update a user",
+        request_body=UserCreateUpdateSerializer,
+        responses={200: UserSerializer}
+    )
+    def partial_update(self, request, *args, **kwargs):
+        """
+        Partially update user information (PATCH request).
+        """
+        return super().partial_update(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_description="Delete a user",
+        responses={204: "User deleted successfully"}
+    )
+    def destroy(self, request, *args, **kwargs):
+        """
+        Delete a user account.
+        """
+        return super().destroy(request, *args, **kwargs)
+
 
 class ListingViewSet(viewsets.ModelViewSet):
     queryset = Listing.objects.all()
@@ -48,6 +141,7 @@ class BookingViewSet(viewsets.ModelViewSet):
         email = request.data.get("email") or (self.get_queryset().model.guest.field.remote_field.model.objects.get(pk=response.data["guest"]).email if response.data.get("guest") else None)
         first_name = request.data.get("first_name", "")
         last_name = request.data.get("last_name", "")
+
         phone_number = request.data.get("phone_number", "")
 
         if not all([booking_id, amount, email]):
