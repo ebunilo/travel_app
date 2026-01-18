@@ -30,6 +30,22 @@ services:
     volumes:
       - .:/app
 
+  celery:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: alx-travel-app:latest
+    env_file:
+      - .env
+    environment:
+      DJANGO_SETTINGS_MODULE: alx_travel_app.settings
+    command: celery -A alx_travel_app worker -l info
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - .:/app
+
   db:
     image: postgres:16-alpine
     environment:
@@ -54,6 +70,10 @@ services:
     image: redis:7-alpine
     ports:
       - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
 
 volumes:
   db_data: {}
+  redis_data: {}

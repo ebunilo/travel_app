@@ -1,22 +1,36 @@
-# Core
+amqp==5.3.1
+asgiref==3.11.0
+async-timeout==5.0.1
+billiard==4.2.4
+celery==5.3.4
+certifi==2025.11.12
+charset-normalizer==3.4.4
+click==8.3.1
+click-didyoumean==0.3.1
+click-plugins==1.1.1.2
+click-repl==0.3.0
 Django==5.2.9
-
-# REST API
+django-cors-headers==4.3.1
+django-environ==0.10.0
 djangorestframework==3.14.0
 drf-yasg==1.21.7
-
-# CORS
-django-cors-headers==4.3.1
-
-# Environment variables
-django-environ==0.10.0
-
-# Database (MySQL)
-# mysqlclient==2.2.0
-
-# Media handling
+idna==3.11
+inflection==0.5.1
+kombu==5.6.1
+packaging==25.0
 Pillow==10.0.1
-
-# Celery and Redis
-celery==5.3.4
+prompt_toolkit==3.0.52
+psycopg==3.3.2
+python-dateutil==2.9.0.post0
+pytz==2025.2
+PyYAML==6.0.3
 redis==5.0.1
+requests==2.32.5
+six==1.17.0
+sqlparse==0.5.4
+typing_extensions==4.15.0
+tzdata==2025.3
+uritemplate==4.2.0
+urllib3==2.6.2
+vine==5.1.0
+wcwidth==0.2.14
