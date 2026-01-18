@@ -70,8 +70,10 @@ Key symbols:
    ```sh
    pip install -r requirements.txt
    ```
+
 3. Set up environment variables.
 Create a `.env` file in the project root with the following variables:
+
     ```env
     DEBUG=True
     SECRET_KEY=your_secret_key
@@ -80,24 +82,34 @@ Create a `.env` file in the project root with the following variables:
     ALLOWED_HOSTS=localhost,
     CORS_ALLOWED_ORIGINS=http://localhost:3000
     ```
+
 4. Apply migrations.
+
     ```sh
     python manage.py migrate
     ```
+
 5. (Optional) Seed the database with sample data.
+
     ```sh
     python manage.py seed
     ```
+
 6. Run the development server.
+
     ```sh
     python manage.py runserver
     ```
+
 7. Access the API documentation at `http://localhost:8000/swagger/`.
 
 ## Testing Payment Integration
+
+To test the payment integration with Chapa, follow these steps:
+
 1. Use Postman or similar tool to initiate a payment via the `/api/payments/initiate/` endpoint.
 2. Complete the payment on Chapa's hosted payment page.
-3. Verify the payment status via the `/api/payments/verify/` endpoint. 
+3. Verify the payment status via the `/api/payments/verify/` endpoint.
 
 ### Initiate Payment via Postman
 
