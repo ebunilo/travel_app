@@ -64,3 +64,53 @@ Key symbols:
    source .venv/bin/activate
    # ...existing code...
    ```
+
+2. Install dependencies.
+
+   ```sh
+   pip install -r requirements.txt
+   ```
+3. Set up environment variables.
+Create a `.env` file in the project root with the following variables:
+    ```env
+    DEBUG=True
+    SECRET_KEY=your_secret_key
+    DATABASE_URL=postgres://user:password@localhost:5432/alx_travel_app
+    CHAPA_API_KEY=your_chapa_api_key
+    ALLOWED_HOSTS=localhost,
+    CORS_ALLOWED_ORIGINS=http://localhost:3000
+    ```
+4. Apply migrations.
+    ```sh
+    python manage.py migrate
+    ```
+5. (Optional) Seed the database with sample data.
+    ```sh
+    python manage.py seed
+    ```
+6. Run the development server.
+    ```sh
+    python manage.py runserver
+    ```
+7. Access the API documentation at `http://localhost:8000/swagger/`.
+
+## Testing Payment Integration
+1. Use Postman or similar tool to initiate a payment via the `/api/payments/initiate/` endpoint.
+2. Complete the payment on Chapa's hosted payment page.
+3. Verify the payment status via the `/api/payments/verify/` endpoint. 
+
+### Initiate Payment via Postman
+
+![Initiate Payment](images/initiate_payment.png)
+
+### Make Payment via Chapa
+
+![Chapa Payment UI](images/make_payment.png)
+
+### Successful Payment UI
+
+![Successful Payment UI](images/successful_payment.png)
+
+### Verify Payment via Chapa
+
+![Verify Payment](images/verify_payment.png)
