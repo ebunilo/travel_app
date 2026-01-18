@@ -17,9 +17,9 @@ A Django + Django REST Framework application for managing property listings, boo
 - drf-yasg (Swagger)
 - django-environ
 - django-cors-headers
-- PostgreSQL
+- PostgreSQL (psycopg)
 - Pillow (images)
-- Celery + Redis (optional for email notifications)
+- Celery + Redis (async tasks and broker)
 
 ## Project Structure
 
@@ -51,7 +51,8 @@ Key symbols:
 
 - Python 3.10+
 - PostgreSQL
-- Redis (optional, for Celery tasks)
+- Redis (required if using Celery)
+- Docker & Docker Compose (optional, recommended for local containerized dev)
 - Virtualenv recommended
 
 ## Setup
@@ -72,36 +73,82 @@ Key symbols:
    ```
 
 3. Set up environment variables.
-Create a `.env` file in the project root with the following variables:
+   Create a `.env` file in the project root with the following variables (these match `alx_travel_app/settings.py`):
 
-    ```env
-    DEBUG=True
-    SECRET_KEY=your_secret_key
-    DATABASE_URL=postgres://user:password@localhost:5432/alx_travel_app
-    CHAPA_API_KEY=your_chapa_api_key
-    ALLOWED_HOSTS=localhost,
-    CORS_ALLOWED_ORIGINS=http://localhost:3000
-    ```
+```env
+# Core
+DEBUG=True
+DJANGO_SECRET_KEY=your_secret_key
+ALLOWED_HOSTS=localhost
+
+# Database (used by settings)
+DB_NAME=travel_db
+DB_USER=travel_user
+DB_PASSWORD=travel_pass
+DB_HOST=localhost
+DB_PORT=5432
+
+# Payment (Chapa)
+CHAPA_SECRET_KEY=your_chapa_secret_key
+
+# Celery / Redis (optional)
+CELERY_BROKER_URL=redis://redis:6379/0
+CELERY_RESULT_BACKEND=redis://redis:6379/0
+
+# Email (optional)
+EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
+EMAIL_HOST=smtp.example.com
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_HOST_USER=your_email@example.com
+EMAIL_HOST_PASSWORD=your_email_password
+DEFAULT_FROM_EMAIL=noreply@alxtravelapp.com
+```
 
 4. Apply migrations.
 
-    ```sh
-    python manage.py migrate
-    ```
+   ```sh
+   python manage.py migrate
+   ```
 
 5. (Optional) Seed the database with sample data.
 
-    ```sh
-    python manage.py seed
-    ```
+   ```sh
+   python manage.py seed
+   ```
 
 6. Run the development server.
 
-    ```sh
-    python manage.py runserver
-    ```
+```sh
+python manage.py runserver
+```
 
 7. Access the API documentation at `http://localhost:8000/swagger/`.
+
+## API Endpoints (high level)
+
+- Listings: `/api/listings/` (GET/POST) and `/api/listings/{id}/` (GET/PUT/PATCH/DELETE)
+- Bookings: `/api/bookings/` and `/api/bookings/{id}/`
+- Users: `/api/users/` and `/api/users/{id}/` — full CRUD (list, retrieve, create, update, partial_update, delete). These endpoints are documented in the Swagger UI.
+
+## Celery / Redis (local / Docker)
+
+If you use Docker Compose (recommended), the project includes services for `web`, `db`, `redis`, and `celery` in `docker-compose.yaml`. Redis data is persisted using the `redis_data` volume.
+
+To start services with Docker Compose:
+
+```sh
+docker-compose up --build web db redis celery
+```
+
+Run only the Celery worker (local / non-Docker):
+
+```sh
+# activate virtualenv
+celery -A alx_travel_app worker -l info
+```
+
+Redis persistence: the Redis service mounts a volume named `redis_data` at `/data` so AOF/RDB data is persisted across restarts.
 
 ## Testing Payment Integration
 
