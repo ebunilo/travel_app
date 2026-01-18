@@ -75,6 +75,8 @@ Key symbols:
 3. Set up environment variables.
    Create a `.env` file in the project root with the following variables (these match `alx_travel_app/settings.py`):
 
+**Development `.env`:**
+
 ```env
 # Core
 DEBUG=True
@@ -88,12 +90,15 @@ DB_PASSWORD=travel_pass
 DB_HOST=localhost
 DB_PORT=5432
 
+# CORS (development allows all origins)
+CORS_ALLOW_ALL_ORIGINS=True
+
 # Payment (Chapa)
 CHAPA_SECRET_KEY=your_chapa_secret_key
 
 # Celery / Redis (optional)
-CELERY_BROKER_URL=redis://redis:6379/0
-CELERY_RESULT_BACKEND=redis://redis:6379/0
+CELERY_BROKER_URL=redis://localhost:6379/0
+CELERY_RESULT_BACKEND=redis://localhost:6379/0
 
 # Email (optional)
 EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
@@ -102,6 +107,42 @@ EMAIL_PORT=587
 EMAIL_USE_TLS=True
 EMAIL_HOST_USER=your_email@example.com
 EMAIL_HOST_PASSWORD=your_email_password
+DEFAULT_FROM_EMAIL=noreply@alxtravelapp.com
+```
+
+**Production `.env` (remote server):**
+
+```env
+# Core
+DEBUG=False
+DJANGO_SECRET_KEY=your_production_secret_here_use_strong_key
+ALLOWED_HOSTS=your.server.domain,server.ip.address
+
+# Database (use docker-compose service name or remote DB host)
+DB_NAME=travel_db
+DB_USER=travel_user
+DB_PASSWORD=your_secure_db_password
+DB_HOST=db
+DB_PORT=5432
+
+# CORS (restrict to your frontend domains)
+CORS_ALLOW_ALL_ORIGINS=False
+CORS_ALLOWED_ORIGINS=https://your.server.domain,https://www.your.server.domain
+
+# Payment (Chapa)
+CHAPA_SECRET_KEY=your_production_chapa_secret_key
+
+# Celery / Redis (use docker-compose service name)
+CELERY_BROKER_URL=redis://redis:6379/0
+CELERY_RESULT_BACKEND=redis://redis:6379/0
+
+# Email (configure with real SMTP for production)
+EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_HOST_USER=your_production_email@gmail.com
+EMAIL_HOST_PASSWORD=your_app_password
 DEFAULT_FROM_EMAIL=noreply@alxtravelapp.com
 ```
 
