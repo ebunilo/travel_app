@@ -1,0 +1,173 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: travel_app_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run migrations
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/travel_app_test
+          REDIS_URL: redis://localhost:6379/0
+        run: |
+          python manage.py migrate
+
+      - name: Run tests
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/travel_app_test
+          REDIS_URL: redis://localhost:6379/0
+        run: |
+          python manage.py test
+
+      - name: Run linting
+        run: |
+          pip install flake8
+          flake8 listings/ alx_travel_app/ --count --select=E9,F63,F7,F82 --show-source --statistics
+
+  build-docker-image:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build Docker image
+        run: |
+          docker build -t travel_app:${{ github.sha }} .
+
+      - name: Save Docker image
+        run: |
+          docker save travel_app:${{ github.sha }} > travel_app.tar
+
+      - name: Upload Docker image artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: docker-image
+          path: travel_app.tar
+          retention-days: 1
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-docker-image
+    if: github.ref == 'refs/heads/main'
+    env:
+      SERVER_IP: ${{ secrets.SERVER_IP }}
+      SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Download Docker image artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: docker-image
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          echo "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Load Docker image on remote server
+        run: |
+          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new travel_app.tar ${{ env.SSH_USERNAME }}@${{ env.SERVER_IP }}:/tmp/
+
+      - name: Deploy to cloud server
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new ${{ env.SSH_USERNAME }}@${{ env.SERVER_IP }} << 'EOF'
+          mkdir -p /home/devops/travel_app
+          cd /home/devops/travel_app
+
+          # Load the Docker image
+          docker load < /tmp/travel_app.tar
+
+          # Stop running containers
+          docker-compose down || true
+
+          # Update docker-compose to use the new image
+          sed -i 's/image: travel_app:.*/image: travel_app:${{ github.sha }}/g' docker-compose.yaml
+
+          # Start new containers
+          docker-compose up -d
+
+          # Run migrations
+          docker-compose exec -T web python manage.py migrate
+
+          # Collect static files
+          docker-compose exec -T web python manage.py collectstatic --noinput
+
+          # Cleanup
+          rm /tmp/travel_app.tar
+
+          echo "Deployment completed successfully!"
+          EOF
+
+      - name: Verify deployment
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new ${{ env.SSH_USERNAME }}@${{ env.SERVER_IP }} << 'EOF'
+          echo "Checking container status..."
+          docker-compose -f /home/devops/travel_app/docker-compose.yaml ps
+
+          echo "Testing health endpoint..."
+          curl -f http://localhost:8000/health/ || echo "Health check may not be available yet"
+          EOF
+
+      - name: Cleanup SSH key
+        if: always()
+        run: |
+          rm -f ~/.ssh/deploy_key
+          rm -f ~/.ssh/known_hosts
