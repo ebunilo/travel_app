@@ -130,14 +130,19 @@ jobs:
           echo "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
           chmod 644 ~/.ssh/known_hosts
 
-      - name: Load Docker image on remote server
+      - name: Copy configuration files to server
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new ${{ env.SSH_USERNAME }}@${{ env.SERVER_IP }} mkdir -p /home/devops/travel_app
+          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new docker-compose.yaml ${{ env.SSH_USERNAME }}@${{ env.SERVER_IP }}:/home/devops/travel_app/
+          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new .env* ${{ env.SSH_USERNAME }}@${{ env.SERVER_IP }}:/home/devops/travel_app/ 2>/dev/null || true
+
+      - name: Transfer Docker image to server
         run: |
           scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new travel_app.tar ${{ env.SSH_USERNAME }}@${{ env.SERVER_IP }}:/tmp/
 
       - name: Deploy to cloud server
         run: |
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new ${{ env.SSH_USERNAME }}@${{ env.SERVER_IP }} << 'EOF'
-          mkdir -p /home/devops/travel_app
           cd /home/devops/travel_app
 
           # Load the Docker image
