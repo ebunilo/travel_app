@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: alx-travel-app:latest
+    image: travel_app:latest
     env_file:
       - .env
     environment:
@@ -34,7 +34,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: alx-travel-app:latest
+    image: travel_app:latest
     env_file:
       - .env
     environment:
