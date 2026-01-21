@@ -99,7 +99,7 @@ jobs:
           docker save travel_app:${{ github.sha }} > travel_app.tar
 
       - name: Upload Docker image artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: docker-image
           path: travel_app.tar
@@ -118,7 +118,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Download Docker image artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: docker-image
 
