@@ -56,14 +56,22 @@ jobs:
 
       - name: Run migrations
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/travel_app_test
+          DB_NAME: travel_app_test
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+          DB_HOST: localhost
+          DB_PORT: "5432"
           REDIS_URL: redis://localhost:6379/0
         run: |
           python manage.py migrate
 
       - name: Run tests
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/travel_app_test
+          DB_NAME: travel_app_test
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+          DB_HOST: localhost
+          DB_PORT: "5432"
           REDIS_URL: redis://localhost:6379/0
         run: |
           python manage.py test
