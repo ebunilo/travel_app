@@ -148,19 +148,32 @@ jobs:
           # Load the Docker image
           docker load < /tmp/travel_app.tar
 
+          # Tag image as latest for docker-compose
+          docker tag travel_app:${{ github.sha }} travel_app:latest
+
           # Stop running containers
           docker-compose down || true
-
-          # Update docker-compose to use the new image
-          sed -i 's/image: travel_app:.*/image: travel_app:${{ github.sha }}/g' docker-compose.yaml
 
           # Start new containers
           docker-compose up -d
 
+          # Wait for DB to be ready
+          echo "Waiting for database to be ready..."
+          for i in {1..30}; do
+            if docker-compose exec -T db pg_isready -U travel_user -d travel_db &>/dev/null; then
+              echo "Database is ready!"
+              break
+            fi
+            echo "Attempt $i - Database not ready yet, waiting..."
+            sleep 2
+          done
+
           # Run migrations
+          echo "Running migrations..."
           docker-compose exec -T web python manage.py migrate
 
           # Collect static files
+          echo "Collecting static files..."
           docker-compose exec -T web python manage.py collectstatic --noinput
 
           # Cleanup
