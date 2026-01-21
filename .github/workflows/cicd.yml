@@ -133,8 +133,7 @@ jobs:
       - name: Copy application files to server
         run: |
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new ${{ env.SSH_USERNAME }}@${{ env.SERVER_IP }} mkdir -p /home/devops/travel_app
-          # Copy entire application including subdirectories
-          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new -r \
+          rsync -av --delete -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new" \
             --exclude='.git' \
             --exclude='__pycache__' \
             --exclude='.pytest_cache' \
@@ -143,6 +142,8 @@ jobs:
             --exclude='venv' \
             --exclude='node_modules' \
             --exclude='.github' \
+            --exclude='*.tar' \
+            --exclude='.DS_Store' \
             . ${{ env.SSH_USERNAME }}@${{ env.SERVER_IP }}:/home/devops/travel_app/
 
       - name: Transfer Docker image to server
