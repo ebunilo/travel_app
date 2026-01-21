@@ -130,11 +130,20 @@ jobs:
           echo "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
           chmod 644 ~/.ssh/known_hosts
 
-      - name: Copy configuration files to server
+      - name: Copy application files to server
         run: |
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new ${{ env.SSH_USERNAME }}@${{ env.SERVER_IP }} mkdir -p /home/devops/travel_app
-          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new docker-compose.yaml ${{ env.SSH_USERNAME }}@${{ env.SERVER_IP }}:/home/devops/travel_app/
-          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new .env* ${{ env.SSH_USERNAME }}@${{ env.SERVER_IP }}:/home/devops/travel_app/ 2>/dev/null || true
+          # Copy entire application including subdirectories
+          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new -r \
+            --exclude='.git' \
+            --exclude='__pycache__' \
+            --exclude='.pytest_cache' \
+            --exclude='*.pyc' \
+            --exclude='.venv' \
+            --exclude='venv' \
+            --exclude='node_modules' \
+            --exclude='.github' \
+            . ${{ env.SSH_USERNAME }}@${{ env.SERVER_IP }}:/home/devops/travel_app/
 
       - name: Transfer Docker image to server
         run: |
