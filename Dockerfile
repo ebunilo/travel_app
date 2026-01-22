@@ -25,6 +25,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy project
 COPY . .
 
+# Copy entrypoint script
+COPY docker-entrypoint.sh /app/docker-entrypoint.sh
+RUN chmod +x /app/docker-entrypoint.sh
+
 # Create non-root user and set proper permissions
 RUN useradd -m appuser && \
     chown -R appuser:appuser /app
@@ -33,7 +37,9 @@ RUN useradd -m appuser && \
 RUN mkdir -p /app/staticfiles /app/media && \
     chown -R appuser:appuser /app/staticfiles /app/media
 
-USER appuser
+# Run entrypoint as root (migrations and collectstatic need to run with permissions)
+# But the actual gunicorn process will run as appuser via exec
+USER root
 
 EXPOSE 8000
 
@@ -41,6 +47,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
   CMD curl -f http://localhost:${PORT}/ || exit 1
 
-# Use Gunicorn to serve the Django app
-# Replace 'alx_travel_app.wsgi:application' if your wsgi module differs.
-CMD ["gunicorn", "alx_travel_app.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3"]
+# Use entrypoint script
+ENTRYPOINT ["/app/docker-entrypoint.sh"]

@@ -15,12 +15,6 @@ services:
       DB_HOST: db
       DB_PORT: 5432
       REDIS_URL: redis://redis:6379/0
-    command: >
-      sh -c "
-        python manage.py migrate &&
-        python manage.py collectstatic --noinput &&
-        gunicorn alx_travel_app.wsgi:application --bind 0.0.0.0:8000 --workers 3
-      "
     ports:
       - "8000:8000"
     depends_on:
