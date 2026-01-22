@@ -87,9 +87,8 @@ WSGI_APPLICATION = 'alx_travel_app.wsgi.application'
 
 # Django REST framework basic configuration (extend as needed)
 REST_FRAMEWORK = {
-    # ...you can add authentication, throttle, pagination settings via env if needed...
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
 }
-
 
 # CORS configuration
 CORS_ALLOW_ALL_ORIGINS = env.bool("CORS_ALLOW_ALL_ORIGINS", default=True)
@@ -153,15 +152,19 @@ STATIC_URL = 'static/'
 # Add this for production collectstatic
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
+# Media files (User uploads)
+MEDIA_URL = 'media/'
+MEDIA_ROOT = BASE_DIR / "media"
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-# Optional Swagger settings
+# Swagger/drf-yasg settings
 SWAGGER_SETTINGS = {
-    'USE_SESSION_AUTH': False,
+    'USE_SESSION_AUTH': True,
     'SECURITY_DEFINITIONS': {
         'Bearer': {
             'type': 'apiKey',
@@ -170,7 +173,10 @@ SWAGGER_SETTINGS = {
             'description': 'JWT Authorization header using the Bearer scheme. Example: "Authorization: Bearer <token>"',
         }
     },
-    'DEFAULT_INFO': None,  # we will define schema info in urls.py
+    'DEFAULT_INFO': None,
+    'SHOW_REQUEST_HEADERS': True,
+    'DEEP_LINKING': True,
+    'REFETCH_SCHEMA_ON_LOGOUT': True,
 }
 
 CHAPA_SECRET_KEY = env('CHAPA_SECRET_KEY', default='')
