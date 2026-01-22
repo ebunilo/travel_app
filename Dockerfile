@@ -25,12 +25,14 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy project
 COPY . .
 
-# Collect static in case you serve docs/static later (safe if not present)
-# Uncomment if you have STATIC_ROOT configured.
-# RUN python manage.py collectstatic --noinput || true
+# Create non-root user and set proper permissions
+RUN useradd -m appuser && \
+    chown -R appuser:appuser /app
 
-# Create non-root user
-RUN useradd -m appuser
+# Create directories that will be used for volumes
+RUN mkdir -p /app/staticfiles /app/media && \
+    chown -R appuser:appuser /app/staticfiles /app/media
+
 USER appuser
 
 EXPOSE 8000
