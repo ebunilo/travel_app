@@ -164,7 +164,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Swagger/drf-yasg settings
 SWAGGER_SETTINGS = {
-    'USE_SESSION_AUTH': True,
+    'USE_SESSION_AUTH': False,
     'SECURITY_DEFINITIONS': {
         'Bearer': {
             'type': 'apiKey',
@@ -177,6 +177,8 @@ SWAGGER_SETTINGS = {
     'SHOW_REQUEST_HEADERS': True,
     'DEEP_LINKING': True,
     'REFETCH_SCHEMA_ON_LOGOUT': True,
+    'OPERATIONS_SORTER': 'method',
+    'TAGS_SORTER': 'alpha',
 }
 
 CHAPA_SECRET_KEY = env('CHAPA_SECRET_KEY', default='')
