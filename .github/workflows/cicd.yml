@@ -150,6 +150,39 @@ jobs:
         run: |
           scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new travel_app.tar ${{ env.SSH_USERNAME }}@${{ env.SERVER_IP }}:/tmp/
 
+      - name: Create .env file on server
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new ${{ env.SSH_USERNAME }}@${{ env.SERVER_IP }} << 'EOF'
+          cat > /home/devops/travel_app/.env << 'ENVEOF'
+          DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}
+          DEBUG=False
+          ALLOWED_HOSTS=localhost,127.0.0.1,${{ env.SERVER_IP }},${{ secrets.ALLOWED_HOSTS }}
+
+          DB_USER=${{ secrets.DB_USER }}
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          DB_NAME=${{ secrets.DB_NAME }}
+          DB_HOST=db
+          DB_PORT=5432
+
+          CORS_ALLOW_ALL_ORIGINS=False
+          CORS_ALLOWED_ORIGINS=${{ secrets.CORS_ALLOWED_ORIGINS }}
+
+          CHAPA_SECRET_KEY=${{ secrets.CHAPA_SECRET_KEY }}
+
+          CELERY_BROKER_URL=redis://redis:6379/0
+          CELERY_RESULT_BACKEND=redis://redis:6379/0
+
+          EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+          EMAIL_HOST=${{ secrets.EMAIL_HOST }}
+          EMAIL_PORT=${{ secrets.EMAIL_PORT }}
+          EMAIL_USE_TLS=True
+          EMAIL_HOST_USER=${{ secrets.EMAIL_HOST_USER }}
+          EMAIL_HOST_PASSWORD=${{ secrets.EMAIL_HOST_PASSWORD }}
+          DEFAULT_FROM_EMAIL=${{ secrets.DEFAULT_FROM_EMAIL }}
+          ENVEOF
+          chmod 600 /home/devops/travel_app/.env
+          EOF
+
       - name: Deploy to cloud server
         run: |
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new ${{ env.SSH_USERNAME }}@${{ env.SERVER_IP }} << 'EOF'
