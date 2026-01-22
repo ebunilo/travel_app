@@ -156,7 +156,7 @@ jobs:
           cat > /home/devops/travel_app/.env << 'ENVEOF'
           DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}
           DEBUG=False
-          ALLOWED_HOSTS=localhost,127.0.0.1,${{ env.SERVER_IP }},${{ secrets.ALLOWED_HOSTS }}
+          ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }}
 
           DB_USER=${{ secrets.DB_USER }}
           DB_PASSWORD=${{ secrets.DB_PASSWORD }}
