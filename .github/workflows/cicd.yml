@@ -153,6 +153,10 @@ jobs:
       - name: Create .env file on server
         run: |
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new ${{ env.SSH_USERNAME }}@${{ env.SERVER_IP }} << 'EOF'
+          # Create necessary directories
+          mkdir -p /home/devops/travel_app/staticfiles
+          mkdir -p /home/devops/travel_app/media
+
           cat > /home/devops/travel_app/.env << 'ENVEOF'
           DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}
           DEBUG=False
